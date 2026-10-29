@@ -1,0 +1,39 @@
+---
+version: "0.1"
+globalTimeout: 90
+testSuiteTimeout: 90
+testSuiteStep: 90
+
+runson: linux
+autosplit: true
+concurrency: 1
+
+# Mirrors RACV's setup: Bitbucket source repo, YAML-only repo, no differentialUpload.
+# Bitbucket needs the username in the link (per the sourcePayload docs).
+sourcePayload:
+  platform: git
+  gitProvider: bitbucket
+  link: https://<bitbucket_username>@bitbucket.org/<workspace>/he-demo-source.git
+  ref: master
+  accessToken: ${{ .secrets.BITBUCKET_TOKEN }}
+  verifySSL: false
+
+pre:
+  # Diagnostic: shows which repo was actually cloned on the VM.
+  # Expect pom.xml + src/ from he-demo-source. Seeing hyperexecuteYamlFiles/ means the YAML repo was cloned instead.
+  - pwd && ls -la
+  - mvn -Dmaven.test.skip=true clean install
+
+testDiscovery:
+  type: raw
+  mode: dynamic
+  command: grep -rl '@Test' src/test/java | sed 's|.*/||; s|\.java$||'
+
+testRunnerCommand: mvn test -Dtest=$test
+
+jobLabel: [sourcePayload-demo, bitbucket]
+
+uploadArtefacts:
+  - name: surefire-reports
+    path:
+      - target/surefire-reports/**
