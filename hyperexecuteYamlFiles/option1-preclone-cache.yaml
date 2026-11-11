@@ -1,0 +1,32 @@
+---
+version: "0.1"
+globalTimeout: 90
+testSuiteTimeout: 90
+testSuiteStep: 90
+
+runson: linux
+autosplit: true
+concurrency: 1
+
+# Option 1 plus a cache key on a file that only exists after the pre step clones the code repo.
+env:
+  CODE_REPO: github.com/vishnuknairTestMuAI/he-demo-source.git
+  CODE_BRANCH: main
+
+cacheKey: '{{ checksum "code/pom.xml" }}'
+cacheDirectories:
+  - .m2
+
+pre:
+  - pwd && ls -la
+  - git clone --depth 1 -b $CODE_BRANCH https://x-access-token:${{ .secrets.GIT_PAT }}@$CODE_REPO code
+  - cd code && mvn -Dmaven.repo.local=../.m2 -Dmaven.test.skip=true clean install
+
+testDiscovery:
+  type: raw
+  mode: dynamic
+  command: grep -rl '@Test' code/src/test/java | sed 's|.*/||; s|\.java$||'
+
+testRunnerCommand: cd code && mvn -Dmaven.repo.local=../.m2 test -Dtest=$test
+
+jobLabel: [option1-preclone-cache]

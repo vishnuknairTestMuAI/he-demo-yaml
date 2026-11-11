@@ -1,0 +1,29 @@
+---
+version: "0.1"
+globalTimeout: 90
+testSuiteTimeout: 90
+testSuiteStep: 90
+
+runson: linux
+autosplit: true
+concurrency: 1
+
+# Options 2 and 3: one shared YAML with no sourcePayload.
+# The CLI is run from the code repo checkout, so the code is uploaded with the job.
+pre:
+  - pwd && ls -la
+  - mvn -Dmaven.test.skip=true clean install
+
+testDiscovery:
+  type: raw
+  mode: dynamic
+  command: grep -rl '@Test' src/test/java | sed 's|.*/||; s|\.java$||'
+
+testRunnerCommand: mvn test -Dtest=$test
+
+jobLabel: [shared-ci-yaml]
+
+uploadArtefacts:
+  - name: surefire-reports
+    path:
+      - target/surefire-reports/**
