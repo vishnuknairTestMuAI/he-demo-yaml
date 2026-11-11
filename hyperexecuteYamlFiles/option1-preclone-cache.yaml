@@ -9,17 +9,13 @@ autosplit: true
 concurrency: 1
 
 # Option 1 plus a cache key on a file that only exists after the pre step clones the code repo.
-env:
-  CODE_REPO: github.com/vishnuknairTestMuAI/he-demo-source.git
-  CODE_BRANCH: main
-
 cacheKey: '{{ checksum "code/pom.xml" }}'
 cacheDirectories:
   - .m2
 
 pre:
   - pwd && ls -la
-  - git clone --depth 1 -b $CODE_BRANCH https://x-access-token:${{ .secrets.GIT_PAT }}@$CODE_REPO code
+  - git clone --depth 1 -b main https://x-access-token:${{ .secrets.GIT_PAT }}@github.com/vishnuknairTestMuAI/he-demo-source.git code
   - cd code && mvn -Dmaven.repo.local=../.m2 -Dmaven.test.skip=true clean install
 
 testDiscovery:

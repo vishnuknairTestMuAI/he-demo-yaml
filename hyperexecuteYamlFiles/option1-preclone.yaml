@@ -9,14 +9,10 @@ autosplit: true
 concurrency: 1
 
 # Option 1: no sourcePayload. The project clones this YAML repo, then the pre step clones the code repo itself.
-env:
-  CODE_REPO: github.com/vishnuknairTestMuAI/he-demo-source.git
-  CODE_BRANCH: main
-
 pre:
   - pwd && ls -la
   # The token is in the URL: check the job logs to confirm it is masked.
-  - git clone --depth 1 -b $CODE_BRANCH https://x-access-token:${{ .secrets.GIT_PAT }}@$CODE_REPO code
+  - git clone --depth 1 -b main https://x-access-token:${{ .secrets.GIT_PAT }}@github.com/vishnuknairTestMuAI/he-demo-source.git code
   - ls -la code
   - cd code && mvn -Dmaven.test.skip=true clean install
 
